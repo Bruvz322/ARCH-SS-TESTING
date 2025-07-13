@@ -1,0 +1,37 @@
+arch-ss/
+├── backend/
+│   ├── package.json
+│   ├── server.js
+│   ├── .env
+│   └── node_modules/ (generated after npm install)
+├── web/
+│   ├── package.json
+│   ├── public/
+│   │   ├── index.html
+│   │   └── favicon.ico
+│   ├── src/
+│   │   ├── assets/
+│   │   │   └── red_crown.svg
+│   │   ├── components/
+│   │   │   ├── AdminPanel.js
+│   │   │   ├── Announcements.js
+│   │   │   ├── ChatRoom.js
+│   │   │   ├── Forums.js
+│   │   │   ├── GamesTab.js
+│   │   │   ├── Login.js
+│   │   │   ├── Navbar.js
+│   │   │   ├── ScriptHub.js
+│   │   │   ├── Tickets.js
+│   │   │   └── UserProfile.js
+│   │   ├── contexts/
+│   │   │   └── AuthContext.js
+│   │   ├── styles/
+│   │   │   └── theme.js
+│   │   ├── App.js
+│   │   └── index.js
+│   └── build/ (generated after npm run build)
+├── database/
+│   └── schema.sql
+├── roblox/
+│   └── server.lua
+└── setup.txt

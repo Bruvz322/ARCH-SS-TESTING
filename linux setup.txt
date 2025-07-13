@@ -1,0 +1,95 @@
+# ARCH SS Server Setup Guide for Linux (Ubuntu 20.04+)
+# Assumes a fresh Ubuntu server with root access
+
+1. Update System
+sudo apt update && sudo apt upgrade -y
+
+2. Install Dependencies
+sudo apt install -y nodejs npm mysql-server nginx
+
+3. Configure MySQL
+sudo systemctl start mysql
+sudo systemctl enable mysql
+sudo mysql_secure_installation
+# Follow prompts to set root password and secure MySQL
+
+4. Create Database and User
+sudo mysql -u root -p
+CREATE DATABASE arch_ss;
+CREATE USER 'arch_ss_user'@'localhost' IDENTIFIED BY 'your_secure_password';
+GRANT ALL PRIVILEGES ON arch_ss.* TO 'arch_ss_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+
+5. Import Database Schema
+mysql -u arch_ss_user -p arch_ss < schema.sql
+# Place schema.sql in the server and run this command
+
+6. Install Backend Dependencies
+cd /path/to/backend
+npm install
+# Create .env file
+echo "JWT_SECRET=your_jwt_secret" > .env
+echo "DB_HOST=localhost" >> .env
+echo "DB_USER=arch_ss_user" >> .env
+echo "DB_PASSWORD=your_secure_password" >> .env
+echo "DB_NAME=arch_ss" >> .env
+echo "PORT=3000" >> .env
+
+7. Run Backend
+npm start
+# For production, use PM2
+sudo npm install -g pm2
+pm2 start server.js --name arch-ss-backend
+pm2 startup
+pm2 save
+
+8. Install Frontend Dependencies
+cd /path/to/frontend
+npm install
+npm run build
+
+9. Configure Nginx
+sudo nano /etc/nginx/sites-available/arch-ss
+# Add the following configuration
+server {
+    listen 80;
+    server_name your_domain.com;
+    root /path/to/frontend/build;
+    index index.html;
+    location / {
+        try_files $uri /index.html;
+    }
+    location /api/ {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+sudo ln -s /etc/nginx/sites-available/arch-ss /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+10. Configure Firewall
+sudo ufw allow 80
+sudo ufw allow 443
+sudo ufw enable
+
+11. Install SSL (Optional, using Let's Encrypt)
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d your_domain.com
+# Follow prompts to configure SSL
+
+12. Monitor Logs
+pm2 logs arch-ss-backend
+tail -f /var/log/nginx/error.log
+
+# Notes
+- Replace 'your_domain.com' with your actual domain
+- Replace 'your_secure_password' with a strong password
+- Ensure /path/to/backend and /path/to/frontend point to your project directories
+- Backup schema.sql and .env files securely
+- Regularly update dependencies: npm update
